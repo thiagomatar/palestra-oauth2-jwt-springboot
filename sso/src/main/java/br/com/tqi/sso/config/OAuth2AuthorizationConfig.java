@@ -4,7 +4,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.authserver.AuthorizationServerProperties;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +13,9 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 @Configuration
 @EnableAuthorizationServer
@@ -36,7 +37,7 @@ public class OAuth2AuthorizationConfig extends AuthorizationServerConfigurerAdap
 
 	@Override
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-		endpoints.authenticationManager(authenticationManager).accessTokenConverter(jwtAccessTokenConverter());
+		endpoints.authenticationManager(authenticationManager).accessTokenConverter(accessTokenConverter());
 	}
 
 	@Override
@@ -45,8 +46,14 @@ public class OAuth2AuthorizationConfig extends AuthorizationServerConfigurerAdap
 	}
 
 	@Bean
-	@ConfigurationProperties("jwt")
-	JwtAccessTokenConverter jwtAccessTokenConverter() {
-		return new JwtAccessTokenConverter();
+	public JwtAccessTokenConverter accessTokenConverter() {
+		JwtAccessTokenConverter accessTokenConverter = new JwtAccessTokenConverter();
+		accessTokenConverter.setSigningKey("tqilab");
+		return accessTokenConverter;
+	}
+
+	@Bean
+	public TokenStore tokenStore() {
+		return new JwtTokenStore(accessTokenConverter());
 	}
 }
